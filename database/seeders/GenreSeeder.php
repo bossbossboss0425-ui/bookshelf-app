@@ -19,7 +19,7 @@ class GenreSeeder extends Seeder
             '科学',
             '芸術',
             '料理',
-            '旅行'
+            '旅行',
         ];
 
         foreach ($genres as $genreName) {

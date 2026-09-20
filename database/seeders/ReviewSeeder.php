@@ -36,7 +36,7 @@ class ReviewSeeder extends Seeder
             Review::factory()
                 ->count($reviewCount)
                 ->state(new Sequence(
-                    fn() => [
+                    fn () => [
                         'user_id' => $users->random()->id,
                         'comment' => $comments[array_rand($comments)],
                     ]
