@@ -30,7 +30,7 @@ class Handler extends ExceptionHandler
         $this->renderable(function (NotFoundHttpException $e, $request) {
             if ($request->is('api/*') || $request->wantsJson()) {
                 return response()->json([
-                    'message' => '指定された書籍が見つかりませんでした。'
+                    'message' => '指定された書籍が見つかりませんでした。',
                 ], 404);
 
             }

@@ -65,7 +65,7 @@ class BookApiController extends Controller
 
             $newBook = Book::create($validated);
 
-            if (!empty($request->genre_ids)) {
+            if (! empty($request->genre_ids)) {
                 $newBook->genres()->sync($request->genre_ids);
             }
 
@@ -110,7 +110,7 @@ class BookApiController extends Controller
         });
 
         return response()->json([
-            'message' => '書籍情報を削除しました。'
+            'message' => '書籍情報を削除しました。',
         ], 200);
     }
 }

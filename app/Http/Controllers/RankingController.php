@@ -12,7 +12,8 @@ class RankingController extends Controller
     public function index()
     {
         // レビューの平均評価が高い順に取得（同点の場合はレビュー数が多い順）
-        $rankedBooks = Book::with('genres')
+        $rankedBooks = Book::has('reviews')
+            ->with('genres')
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
             ->orderByDesc('reviews_avg_rating')

@@ -17,7 +17,7 @@ class BookFactory extends Factory
             'title' => $this->faker->realText(20),
             'author' => $this->faker->name(),
             'isbn' => $this->faker->isbn13(),
-            'published_at' => $this->faker->date(),
+            'published_date' => $this->faker->date(),
             'description' => $this->faker->realText(100),
             'image_url' => 'https://placehold.co/200x300/e2e8f0/475569?text=1',
         ];

@@ -17,13 +17,13 @@ class BookDetailResource extends JsonResource
             'published_date' => $this->published_date,
             'description' => $this->description,
             'image_url' => $this->image_url,
-            'genres' => $this->genres->map(fn($genre) => [
+            'genres' => $this->genres->map(fn ($genre) => [
                 'id' => $genre->id,
                 'name' => $genre->name,
             ]),
             'average_rating' => round($this->reviews()->avg('rating') ?? 0, 1),
             'reviews_count' => $this->reviews()->count(),
-            'reviews' => $this->reviews->map(fn($review) => [
+            'reviews' => $this->reviews->map(fn ($review) => [
                 'id' => $review->id,
                 'user_name' => $review->user->name ?? '不明なユーザー',
                 'rating' => $review->rating,
