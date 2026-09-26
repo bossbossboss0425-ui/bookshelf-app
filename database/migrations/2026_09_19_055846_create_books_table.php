@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('books', function (Blueprint $table) {
@@ -13,7 +12,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // 登録者
             $table->string('title');
             $table->string('author');
-            $table->string('isbn')->nullable();
+            $table->string('isbn')->nullable()->unique();
             $table->date('published_date')->nullable();
             $table->text('description')->nullable();
             $table->string('image_url')->nullable();

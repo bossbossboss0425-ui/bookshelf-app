@@ -11,7 +11,11 @@ class BookSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::first(); // 山田太郎
+        $users = User::all();
+
+        if ($users->isEmpty()) {
+            return;
+        }
 
         $booksData = [
             [
@@ -106,10 +110,14 @@ class BookSeeder extends Seeder
 
         foreach ($booksData as $index => $data) {
             $number = $index + 1;
+
+            // 登録者を全ユーザーからランダムに選出
+            $randomUser = $users->random();
+
             $book = Book::firstOrCreate(
                 ['isbn' => $data['isbn']],
                 [
-                    'user_id' => $user->id,
+                    'user_id' => $randomUser->id,
                     'title' => $data['title'],
                     'author' => $data['author'],
                     'published_date' => $data['published_date'],

@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Book;
 use App\Models\Review;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 
 class ReviewSeeder extends Seeder
@@ -14,6 +13,10 @@ class ReviewSeeder extends Seeder
     {
         $users = User::all();
         $books = Book::all();
+
+        if ($users->isEmpty() || $books->isEmpty()) {
+            return;
+        }
 
         // リアルなコメントリスト
         $comments = [
@@ -29,21 +32,20 @@ class ReviewSeeder extends Seeder
             '自分がどれほど偏見で世界を見ていたかに気付かされました。全員読むべき。',
         ];
 
-        // 11冊の書籍それぞれに2〜4件のレビューを配分（合計約32件）
+        // 11冊の書籍それぞれに2〜4件のレビューを配分
         foreach ($books as $book) {
-            $reviewCount = rand(2, 4); // 各書籍に2〜4件
+            $reviewCount = rand(2, 4);
 
-            Review::factory()
-                ->count($reviewCount)
-                ->state(new Sequence(
-                    fn () => [
-                        'user_id' => $users->random()->id,
-                        'comment' => $comments[array_rand($comments)],
-                    ]
-                ))
-                ->create([
+            // 1冊ごとにユーザーリストをシャッフルし、重複投稿を防ぐ
+            $reviewers = $users->shuffle()->take($reviewCount);
+
+            foreach ($reviewers as $reviewer) {
+                Review::factory()->create([
                     'book_id' => $book->id,
+                    'user_id' => $reviewer->id,
+                    'comment' => $comments[array_rand($comments)],
                 ]);
+            }
         }
     }
 }

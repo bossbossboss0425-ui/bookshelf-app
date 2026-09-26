@@ -28,9 +28,9 @@ erDiagram
 
     books ||--o{ reviews : "has many"
     books ||--o{ favorites : "has many"
-    books ||--|{ book_genre : "belongs to many"
+    books ||--|{ book_genre : "has many"
 
-    genres ||--|{ book_genre : "belongs to many"
+    genres ||--|{ book_genre : "has many"
 
     reviews ||--o{ review_likes : "has many"
 
