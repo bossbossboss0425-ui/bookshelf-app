@@ -37,7 +37,7 @@ class BookApiController extends Controller
             });
         }
 
-        $books = $query->latest()->paginate($request->input('per_page', 10));
+        $books = $query->latest()->paginate($request->input('per_page', 20));
 
         return BookResource::collection($books);
     }
@@ -60,12 +60,12 @@ class BookApiController extends Controller
         $validated = $request->validated();
 
         $book = DB::transaction(function () use ($validated, $request) {
-            // 認証なしのため、テストユーザーまたはログイン中のIDを設定（環境に合わせて調整）
-            $validated['user_id'] = auth()->id() ?? 1;
+            // Sanctum認証されたログインユーザーのIDを設定
+            $validated['user_id'] = auth()->id();
 
             $newBook = Book::create($validated);
 
-            if (! empty($request->genre_ids)) {
+            if (!empty($request->genre_ids)) {
                 $newBook->genres()->sync($request->genre_ids);
             }
 
@@ -82,6 +82,13 @@ class BookApiController extends Controller
      */
     public function update(UpdateBookRequest $request, Book $book)
     {
+        // 認可チェック: 本の作成者本人でなければ 403 Forbidden
+        if ($book->user_id !== auth()->id()) {
+            return response()->json([
+                'message' => 'この書籍情報を更新する権限がありません。',
+            ], 403);
+        }
+
         $validated = $request->validated();
 
         DB::transaction(function () use ($book, $validated, $request) {
@@ -100,6 +107,13 @@ class BookApiController extends Controller
      */
     public function destroy(Book $book)
     {
+        // 認可チェック: 本の作成者本人でなければ 403 Forbidden
+        if ($book->user_id !== auth()->id()) {
+            return response()->json([
+                'message' => 'この書籍情報を削除する権限がありません。',
+            ], 403);
+        }
+
         DB::transaction(function () use ($book) {
             // 関連データの適切な削除（多対多中間テーブルの解消）
             $book->genres()->detach();
