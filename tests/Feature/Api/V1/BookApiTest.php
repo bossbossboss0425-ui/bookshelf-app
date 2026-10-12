@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\Feature\Api;
+namespace Tests\Feature\Api;
 
 use App\Models\Book;
 use App\Models\Genre;
@@ -13,7 +13,7 @@ class BookApiTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function a_p01_書籍一覧が_jso_n形式で取得できる(): void
+    public function 書籍一覧がjson形式で取得できる(): void
     {
         Book::factory()->count(3)->create();
 
@@ -28,7 +28,7 @@ class BookApiTest extends TestCase
     }
 
     /** @test */
-    public function a_p02_指定_i_dの書籍詳細が取得できる(): void
+    public function 指定idの書籍詳細が取得できる(): void
     {
         $book = Book::factory()->create();
 
@@ -39,7 +39,7 @@ class BookApiTest extends TestCase
     }
 
     /** @test */
-    public function a_p02_存在しない_i_dの場合は404エラーレスポンスが返る(): void
+    public function 存在しないidの場合は404エラーレスポンスが返る(): void
     {
         $response = $this->getJson('/api/v1/books/99999');
 
@@ -50,7 +50,7 @@ class BookApiTest extends TestCase
     }
 
     /** @test */
-    public function a_p03_バリデーション通過時に書籍が新規登録される(): void
+    public function バリデーション通過時に書籍が新規登録される(): void
     {
         $user = User::factory()->create();
         $genre = Genre::create([
@@ -74,33 +74,89 @@ class BookApiTest extends TestCase
     }
 
     /** @test */
-    public function a_p04_自身の_isb_nを除外して更新が成功する(): void
+    public function 自身のisbnを除外して更新が成功する(): void
     {
-        $book = Book::factory()->create(['isbn' => '9784999999999']);
+        $user = User::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+            'isbn' => '9784999999999',
+        ]);
 
         $updateData = [
             'title' => 'API更新後タイトル',
             'author' => $book->author,
-            'isbn' => '9784999999999', // 同一のISBN
+            'isbn' => '9784999999999',
             'published_date' => $book->published_date,
         ];
 
-        $response = $this->putJson("/api/v1/books/{$book->id}", $updateData);
+        $response = $this->actingAs($user, 'sanctum')
+            ->putJson("/api/v1/books/{$book->id}", $updateData);
 
         $response->assertStatus(200)
             ->assertJsonPath('data.title', 'API更新後タイトル');
+
     }
 
     /** @test */
-    public function a_p05_書籍削除時に関連データも削除される(): void
+    public function 書籍削除時に関連データも削除される(): void
+    {
+        $user = User::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->deleteJson("/api/v1/books/{$book->id}");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => '書籍情報を削除しました。',
+            ]);
+
+        $this->assertDatabaseMissing('books', [
+            'id' => $book->id,
+        ]);
+    }
+
+    /** @test */
+    public function 未認証ユーザーは書籍を登録できない(): void
+    {
+        $response = $this->postJson('/api/v1/books', [
+            'title' => '未認証登録テスト',
+            'author' => 'テスト著者',
+            'isbn' => '9784111111111',
+        ]);
+
+        $response->assertUnauthorized();
+    }
+
+    /** @test */
+    public function 未認証ユーザーは書籍を更新できない(): void
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->putJson("/api/v1/books/{$book->id}", [
+            'title' => '未認証更新テスト',
+            'author' => $book->author,
+            'isbn' => $book->isbn,
+        ]);
+
+        $response->assertUnauthorized();
+    }
+
+    /** @test */
+    public function 未認証ユーザーは書籍を削除できない(): void
     {
         $book = Book::factory()->create();
 
         $response = $this->deleteJson("/api/v1/books/{$book->id}");
 
-        $response->assertStatus(200)
-            ->assertJson(['message' => '書籍情報を削除しました。']);
+        $response->assertUnauthorized();
 
-        $this->assertDatabaseMissing('books', ['id' => $book->id]);
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+        ]);
     }
 }
