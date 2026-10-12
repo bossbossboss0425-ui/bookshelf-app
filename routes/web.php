@@ -3,7 +3,9 @@
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GenreController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RankingController;
+use App\Http\Controllers\ReadingPlanController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
@@ -30,14 +32,12 @@ Route::get('/genres', [GenreController::class, 'index'])->name('genres.index');
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->group(function () {
-    // 通知一覧の仮ルート（書籍一覧へリダイレクト）
-    Route::get('/notifications', function () {
-        return redirect()->route('books.index');
-    })->name('notifications.index');
-    // 読書計画の仮ルート（トップページや別の画面へリダイレクト、または空ビューを返す）
-    Route::get('/reading-plans', function () {
-        return redirect()->route('books.index');
-    })->name('reading-plans.index');
+    // 通知一覧・既読化
+    Route::get('/notifications', [NotificationController::class, 'index'])
+        ->name('notifications.index');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'read'])
+        ->name('notifications.read');
+
     // マイ読書レポート
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     // ★ /books/create を /books/{book} よりも前に定義
@@ -67,6 +67,12 @@ Route::middleware(['auth'])->group(function () {
     // お気に入り一覧・切り替え (PG05)
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('/books/{book}/favorites', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+
+    // 読書計画関連
+    Route::post('/reading-plans/{reading_plan}/complete', [ReadingPlanController::class, 'complete'])
+        ->name('reading-plans.complete');
+
+    Route::resource('reading-plans', ReadingPlanController::class)->except(['show']);
 });
 
 /*

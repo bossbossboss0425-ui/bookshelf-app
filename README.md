@@ -25,76 +25,101 @@ erDiagram
     users ||--o{ reviews : "has many"
     users ||--o{ favorites : "has many"
     users ||--o{ review_likes : "has many"
+    users ||--o{ reading_plans : "has many"
+    users ||--o{ notifications : "has many"
 
     books ||--o{ reviews : "has many"
     books ||--o{ favorites : "has many"
-    books ||--|{ book_genre : "has many"
+    books ||--o{ book_genre : "has many"
+    books ||--o{ reading_plans : "has many"
 
-    genres ||--|{ book_genre : "has many"
+    genres ||--o{ book_genre : "has many"
 
     reviews ||--o{ review_likes : "has many"
 
     users {
-        id bigint PK
-        name string
-        email string UK
+        id bigint_unsigned PK
+        name varchar
+        email varchar UK
         email_verified_at timestamp
-        password string
-        remember_token string
+        password varchar
+        remember_token varchar
         created_at timestamp
         updated_at timestamp
     }
 
     books {
-        id bigint PK
-        user_id bigint FK "users.id"
-        title string
-        author string
-        isbn string UK
+        id bigint_unsigned PK
+        user_id bigint_unsigned FK
+        title varchar
+        author varchar
+        isbn varchar UK
         published_date date
         description text
-        image_url string
+        image_url varchar
         created_at timestamp
         updated_at timestamp
     }
 
     genres {
-        id bigint PK
-        name string UK
+        id bigint_unsigned PK
+        name varchar UK
         created_at timestamp
         updated_at timestamp
     }
 
     book_genre {
-        id bigint PK
-        book_id bigint FK "books.id"
-        genre_id bigint FK "genres.id"
+        id bigint_unsigned PK
+        book_id bigint_unsigned FK
+        genre_id bigint_unsigned FK
         created_at timestamp
         updated_at timestamp
     }
 
     reviews {
-        id bigint PK
-        user_id bigint FK "users.id"
-        book_id bigint FK "books.id"
-        rating integer
+        id bigint_unsigned PK
+        user_id bigint_unsigned FK
+        book_id bigint_unsigned FK
+        rating tinyint_unsigned
         comment text
         created_at timestamp
         updated_at timestamp
     }
 
     favorites {
-        id bigint PK
-        user_id bigint FK "users.id"
-        book_id bigint FK "books.id"
+        id bigint_unsigned PK
+        user_id bigint_unsigned FK
+        book_id bigint_unsigned FK
         created_at timestamp
         updated_at timestamp
     }
 
     review_likes {
-        id bigint PK
-        user_id bigint FK "users.id"
-        review_id bigint FK "reviews.id"
+        id bigint_unsigned PK
+        user_id bigint_unsigned FK
+        review_id bigint_unsigned FK
+        created_at timestamp
+        updated_at timestamp
+    }
+
+    notifications {
+        id char36 PK
+        type varchar
+        notifiable_type varchar
+        notifiable_id bigint_unsigned
+        data text
+        read_at timestamp
+        created_at timestamp
+        updated_at timestamp
+    }
+
+    reading_plans {
+        id bigint_unsigned PK
+        user_id bigint_unsigned FK
+        book_id bigint_unsigned FK
+        target_date date
+        status varchar
+        completed_at timestamp
         created_at timestamp
         updated_at timestamp
     }
