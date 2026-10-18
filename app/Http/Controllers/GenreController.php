@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Genre;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class GenreController extends Controller
 {
     /**
-     * ジャンル一覧を表示 (PG08)
+     * ジャンル一覧を表示する
+     *
+     * @return View ジャンル一覧画面
      */
-    public function index()
+    public function index(): View
     {
         // 関連する書籍数をカウントして一覧取得
         $genres = Genre::withCount('books')->get();
@@ -19,9 +23,12 @@ class GenreController extends Controller
     }
 
     /**
-     * ジャンル別書籍一覧を表示 (PG09)
+     * ジャンル別書籍一覧を表示する
+     *
+     * @param  Genre  $genre  表示対象のジャンル
+     * @return View ジャンル別書籍一覧画面
      */
-    public function show(Genre $genre)
+    public function show(Genre $genre): View
     {
         // このジャンルに紐づく書籍をペジネーション（10件/ページ）で取得
         $books = $genre->books()
@@ -34,17 +41,22 @@ class GenreController extends Controller
     }
 
     /**
-     * ジャンル登録フォームを表示 (PG10)
+     * ジャンル登録フォームを表示する
+     *
+     * @return View ジャンル登録画面
      */
-    public function create()
+    public function create(): View
     {
         return view('genres.create');
     }
 
     /**
-     * 新規ジャンルを保存 (PG10)
+     * 新規ジャンルを保存する
+     *
+     * @param  Request  $request  ジャンルの登録データ
+     * @return RedirectResponse ジャンル一覧画面へのリダイレクト
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:50', 'unique:genres,name'],
@@ -56,17 +68,24 @@ class GenreController extends Controller
     }
 
     /**
-     * ジャンル編集フォームを表示 (PG10)
+     * ジャンル編集フォームを表示する
+     *
+     * @param  Genre  $genre  編集対象のジャンル
+     * @return View ジャンル編集画面
      */
-    public function edit(Genre $genre)
+    public function edit(Genre $genre): View
     {
         return view('genres.edit', compact('genre'));
     }
 
     /**
-     * ジャンル情報を更新 (PG10)
+     * ジャンル情報を更新する
+     *
+     * @param  Request  $request  ジャンルの更新データ
+     * @param  Genre  $genre  更新対象のジャンル
+     * @return RedirectResponse ジャンル一覧画面へのリダイレクト
      */
-    public function update(Request $request, Genre $genre)
+    public function update(Request $request, Genre $genre): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:50', 'unique:genres,name,'.$genre->id],
@@ -78,9 +97,12 @@ class GenreController extends Controller
     }
 
     /**
-     * ジャンルを削除 (PG10)
+     * ジャンルを削除する
+     *
+     * @param  Genre  $genre  削除対象のジャンル
+     * @return RedirectResponse ジャンル一覧画面または直前の画面へのリダイレクト
      */
-    public function destroy(Genre $genre)
+    public function destroy(Genre $genre): RedirectResponse
     {
         // 書籍に紐づいているかチェック
         if ($genre->books()->exists()) {

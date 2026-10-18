@@ -12,11 +12,21 @@ class ReviewLike extends Model
 
     protected $fillable = ['user_id', 'review_id'];
 
+    /**
+     * 「いいね」をしたユーザーを取得する
+     *
+     * @return BelongsTo ユーザーとのリレーション
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * 「いいね」されたレビューを取得する
+     *
+     * @return BelongsTo レビューとのリレーション
+     */
     public function review(): BelongsTo
     {
         return $this->belongsTo(Review::class);

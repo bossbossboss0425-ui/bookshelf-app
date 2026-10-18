@@ -7,11 +7,23 @@ use Illuminate\Validation\Rule;
 
 class UpdateBookRequest extends FormRequest
 {
+    /**
+     * 書籍更新リクエストの実行を許可する
+     *
+     * @return bool リクエストを許可する場合はtrue
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * 書籍更新時のバリデーションルールを定義する
+     *
+     * ISBNの重複チェックでは、更新対象の書籍自身を除外する。
+     *
+     * @return array<string, mixed> バリデーションルールの配列
+     */
     public function rules(): array
     {
         return [
@@ -32,7 +44,9 @@ class UpdateBookRequest extends FormRequest
     }
 
     /**
-     * カスタムバリデーションエラーメッセージ
+     * バリデーションエラーメッセージを定義する
+     *
+     * @return array<string, string> エラーメッセージの配列
      */
     public function messages(): array
     {

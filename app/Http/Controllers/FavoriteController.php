@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 
 class FavoriteController extends Controller
 {
     /**
-     * ログインユーザーのお気に入り書籍一覧を表示 (PG05)
+     * ログインユーザーのお気に入り書籍一覧を表示する
+     *
+     * @return View お気に入り書籍一覧画面
      */
-    public function index()
+    public function index(): View
     {
         $user = Auth::user();
 
@@ -25,9 +29,12 @@ class FavoriteController extends Controller
     }
 
     /**
-     * 書籍のお気に入り追加 / 解除を切り替え (PG05)
+     * 書籍のお気に入り追加・解除を切り替える
+     *
+     * @param  Book  $book  お気に入り登録・解除の対象書籍
+     * @return RedirectResponse 直前の画面へのリダイレクト
      */
-    public function toggle(Book $book)
+    public function toggle(Book $book): RedirectResponse
     {
         $user = Auth::user();
 

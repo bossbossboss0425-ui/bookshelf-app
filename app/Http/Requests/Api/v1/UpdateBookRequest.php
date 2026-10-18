@@ -7,11 +7,25 @@ use Illuminate\Validation\Rule;
 
 class UpdateBookRequest extends FormRequest
 {
+    /**
+     * API書籍更新リクエストの実行を許可する
+     *
+     * 書籍の更新権限はコントローラー側で確認する。
+     *
+     * @return bool リクエストを許可する場合はtrue
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * API書籍更新時のバリデーションルールを定義する
+     *
+     * ISBNの重複チェックでは、更新対象の書籍自身を除外する。
+     *
+     * @return array<string, mixed> バリデーションルールの配列
+     */
     public function rules(): array
     {
         return [

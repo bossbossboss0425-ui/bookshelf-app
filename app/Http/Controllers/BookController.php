@@ -7,6 +7,9 @@ use App\Http\Requests\UpdateBookRequest;
 use App\Models\Book;
 use App\Models\Genre;
 use App\Models\Review;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -14,9 +17,12 @@ use Illuminate\Support\Facades\Http;
 class BookController extends Controller
 {
     /**
-     * 書籍一覧を表示 (10件/ページ)
+     * 書籍一覧を表示する（10件/ページ）
+     *
+     * @param  Request  $request  検索・絞り込み・ソート条件
+     * @return View 書籍一覧画面
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         // 検索フォームのジャンル選択肢用
         $genres = Genre::all();
@@ -71,9 +77,11 @@ class BookController extends Controller
     }
 
     /**
-     * 書籍登録フォームを表示
+     * 書籍登録フォームを表示する
+     *
+     * @return View 書籍登録画面
      */
-    public function create()
+    public function create(): View
     {
         $genres = Genre::all();
 
@@ -81,9 +89,12 @@ class BookController extends Controller
     }
 
     /**
-     * 新規書籍を保存
+     * 新規書籍を保存する
+     *
+     * @param  StoreBookRequest  $request  書籍の登録データ
+     * @return RedirectResponse 書籍一覧画面へのリダイレクト
      */
-    public function store(StoreBookRequest $request)
+    public function store(StoreBookRequest $request): RedirectResponse
     {
         $validated = $request->validated();
         $validated['user_id'] = Auth::id();
@@ -98,9 +109,12 @@ class BookController extends Controller
     }
 
     /**
-     * 書籍詳細を表示
+     * 書籍詳細を表示する
+     *
+     * @param  Book  $book  表示対象の書籍
+     * @return View 書籍詳細画面
      */
-    public function show(Book $book)
+    public function show(Book $book): View
     {
         $book->load([
             'genres',
@@ -112,9 +126,12 @@ class BookController extends Controller
     }
 
     /**
-     * 書籍編集フォームを表示
+     * 書籍編集フォームを表示する
+     *
+     * @param  Book  $book  編集対象の書籍
+     * @return View 書籍編集画面
      */
-    public function edit(Book $book)
+    public function edit(Book $book): View
     {
         $this->authorize('update', $book);
 
@@ -124,9 +141,13 @@ class BookController extends Controller
     }
 
     /**
-     * 書籍情報を更新
+     * 書籍情報を更新する
+     *
+     * @param  UpdateBookRequest  $request  書籍の更新データ
+     * @param  Book  $book  更新対象の書籍
+     * @return RedirectResponse 書籍詳細画面へのリダイレクト
      */
-    public function update(UpdateBookRequest $request, Book $book)
+    public function update(UpdateBookRequest $request, Book $book): RedirectResponse
     {
         $this->authorize('update', $book);
 
@@ -141,9 +162,12 @@ class BookController extends Controller
     }
 
     /**
-     * 書籍を削除（関連データも自動/明示的に削除）
+     * 書籍を削除する（関連データも自動・明示的に削除）
+     *
+     * @param  Book  $book  削除対象の書籍
+     * @return RedirectResponse 書籍一覧画面へのリダイレクト
      */
-    public function destroy(Book $book)
+    public function destroy(Book $book): RedirectResponse
     {
         $this->authorize('delete', $book);
 
@@ -154,9 +178,12 @@ class BookController extends Controller
     }
 
     /**
-     * レビューの「いいね」をトグル（追加/解除）する
+     * レビューの「いいね」をトグル（追加・解除）する
+     *
+     * @param  Review  $review  対象のレビュー
+     * @return RedirectResponse 直前の画面へのリダイレクト
      */
-    public function likeReview(Review $review)
+    public function likeReview(Review $review): RedirectResponse
     {
         $review->likedByUsers()->toggle(auth()->id());
 
@@ -165,8 +192,11 @@ class BookController extends Controller
 
     /**
      * ISBNからGoogle Books APIを利用して書籍情報を取得する
+     *
+     * @param  string  $isbn  検索する13桁のISBN
+     * @return JsonResponse 書籍情報またはエラー情報を含むJSONレスポンス
      */
-    public function fetchByIsbn(string $isbn)
+    public function fetchByIsbn(string $isbn): JsonResponse
     {
         // ハイフンを除去
         $isbn = str_replace('-', '', $isbn);
@@ -180,21 +210,27 @@ class BookController extends Controller
 
         try {
             // リクエストパラメータの組み立て
-            $params = [
-                'q' => 'isbn:'.$isbn,
-            ];
+            $apiKey = config('services.google_books.key');
 
-            // .env に APIキーが設定されている場合はパラメータに追加
-            if (env('GOOGLE_BOOKS_API_KEY')) {
-                $params['key'] = env('GOOGLE_BOOKS_API_KEY');
+            if (empty($apiKey)) {
+                \Log::error('Google Books APIキーが未設定です');
+
+                return response()->json([
+                    'error' => 'Google Books APIキーが設定されていません。',
+                ], 500);
             }
 
+            $params = [
+                'q' => 'isbn:'.$isbn,
+                'key' => $apiKey,
+            ];
+
             // Google Books API へリクエスト
-            $response = Http::withoutVerifying()
-                ->withHeaders([
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                ])
-                ->get('https://www.googleapis.com/books/v1/volumes', $params);
+            $response = Http::timeout(10)
+                ->get(
+                    'https://www.googleapis.com/books/v1/volumes',
+                    $params
+                );
 
             if ($response->failed()) {
                 \Log::error('Google Books API Error: '.$response->status().' '.$response->body());

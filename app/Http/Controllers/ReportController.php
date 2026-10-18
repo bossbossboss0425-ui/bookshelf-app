@@ -3,14 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Review;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
     /**
-     * マイ読書レポート画面を表示
+     * マイ読書レポート画面を表示する
+     *
+     * ログインユーザーのレビューを集計し、
+     * 基本サマリー、評価分布、高評価書籍、ジャンル別評価傾向を取得する。
+     *
+     * @param  Request  $request  ログインユーザーを取得するためのリクエスト
+     * @return View マイ読書レポート画面
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $user = $request->user();
 

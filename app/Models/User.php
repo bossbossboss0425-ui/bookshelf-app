@@ -35,31 +35,51 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // ユーザーが登録した書籍
+    /**
+     * ユーザーが登録した書籍を取得する
+     *
+     * @return HasMany ユーザーと書籍の1対多リレーション
+     */
     public function books(): HasMany
     {
         return $this->hasMany(Book::class);
     }
 
-    // ユーザーが投稿したレビュー
+    /**
+     * ユーザーが投稿したレビューを取得する
+     *
+     * @return HasMany ユーザーとレビューの1対多リレーション
+     */
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
     }
 
-    // ユーザーがお気に入り登録した書籍（多対多）
+    /**
+     * ユーザーがお気に入り登録した書籍を取得する
+     *
+     * @return BelongsToMany お気に入り書籍との多対多リレーション
+     */
     public function favoriteBooks(): BelongsToMany
     {
         return $this->belongsToMany(Book::class, 'favorites')->withTimestamps();
     }
 
-    // ユーザーが「いいね」したレビュー（多対多）
+    /**
+     * ユーザーが「いいね」したレビューを取得する
+     *
+     * @return BelongsToMany 「いいね」したレビューとの多対多リレーション
+     */
     public function likedReviews(): BelongsToMany
     {
         return $this->belongsToMany(Review::class, 'review_likes')->withTimestamps();
     }
 
-    // ユーザーの読書計画
+    /**
+     * ユーザーの読書計画を取得する
+     *
+     * @return HasMany ユーザーと読書計画の1対多リレーション
+     */
     public function readingPlans(): HasMany
     {
         return $this->hasMany(ReadingPlan::class);

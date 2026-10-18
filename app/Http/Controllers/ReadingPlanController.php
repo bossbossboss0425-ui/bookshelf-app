@@ -5,15 +5,20 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ReadingPlan\StoreReadingPlanRequest;
 use App\Http\Requests\ReadingPlan\UpdateReadingPlanRequest;
 use App\Models\ReadingPlan;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ReadingPlanController extends Controller
 {
     /**
-     * 読書計画一覧・絞り込み表示
+     * 読書計画一覧を表示し、ステータスで絞り込む
+     *
+     * @param  Request  $request  絞り込み条件を含むリクエスト
+     * @return View 読書計画一覧画面
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $currentStatus = $request->query('status');
 
@@ -29,9 +34,11 @@ class ReadingPlanController extends Controller
     }
 
     /**
-     * 新規作成画面表示
+     * 読書計画の新規作成画面を表示する
+     *
+     * @return View 読書計画の新規作成画面
      */
-    public function create()
+    public function create(): View
     {
         // ユーザーが登録した書籍一覧（ドロップダウン用）
         $books = Auth::user()->books()->select('id', 'title')->get();
@@ -40,9 +47,12 @@ class ReadingPlanController extends Controller
     }
 
     /**
-     * 新規登録処理
+     * 新しい読書計画を登録する
+     *
+     * @param  StoreReadingPlanRequest  $request  読書計画の登録データ
+     * @return RedirectResponse 読書計画一覧画面へのリダイレクト
      */
-    public function store(StoreReadingPlanRequest $request)
+    public function store(StoreReadingPlanRequest $request): RedirectResponse
     {
         Auth::user()->readingPlans()->create([
             'book_id' => $request->validated('book_id'),
@@ -55,9 +65,12 @@ class ReadingPlanController extends Controller
     }
 
     /**
-     * 編集画面表示
+     * 読書計画の編集画面を表示する
+     *
+     * @param  ReadingPlan  $readingPlan  編集対象の読書計画
+     * @return View 読書計画の編集画面
      */
-    public function edit(ReadingPlan $readingPlan)
+    public function edit(ReadingPlan $readingPlan): View
     {
         $this->authorize('update', $readingPlan);
 
@@ -65,10 +78,16 @@ class ReadingPlanController extends Controller
     }
 
     /**
-     * 更新処理
+     * 読書計画の目標日を更新する
+     *
+     * @param  UpdateReadingPlanRequest  $request  読書計画の更新データ
+     * @param  ReadingPlan  $readingPlan  更新対象の読書計画
+     * @return RedirectResponse 読書計画一覧画面へのリダイレクト
      */
-    public function update(UpdateReadingPlanRequest $request, ReadingPlan $readingPlan)
-    {
+    public function update(
+        UpdateReadingPlanRequest $request,
+        ReadingPlan $readingPlan
+    ): RedirectResponse {
         $this->authorize('update', $readingPlan);
 
         $readingPlan->update([
@@ -80,9 +99,12 @@ class ReadingPlanController extends Controller
     }
 
     /**
-     * 読了（ステータス変更）処理
+     * 読書計画を読了にし、ステータスと読了日時を更新する
+     *
+     * @param  ReadingPlan  $readingPlan  読了にする読書計画
+     * @return RedirectResponse 読書計画一覧画面へのリダイレクト
      */
-    public function complete(ReadingPlan $readingPlan)
+    public function complete(ReadingPlan $readingPlan): RedirectResponse
     {
         $this->authorize('update', $readingPlan);
 
@@ -96,9 +118,12 @@ class ReadingPlanController extends Controller
     }
 
     /**
-     * 削除処理
+     * 読書計画を削除する
+     *
+     * @param  ReadingPlan  $readingPlan  削除対象の読書計画
+     * @return RedirectResponse 読書計画一覧画面へのリダイレクト
      */
-    public function destroy(ReadingPlan $readingPlan)
+    public function destroy(ReadingPlan $readingPlan): RedirectResponse
     {
         $this->authorize('delete', $readingPlan);
 

@@ -4,15 +4,22 @@ namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
     /**
-     * トークン発行（ログイン）
+     * メールアドレスとパスワードを検証し、API認証トークンを発行する
+     *
+     * 認証に失敗した場合は401を返し、成功した場合はBearerトークンを返す。
+     *
+     * @param  Request  $request  ログイン情報を含むリクエスト
+     * @return JsonResponse 認証結果またはアクセストークンを含むJSONレスポンス
      */
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
         $request->validate([
             'email' => 'required|email',
@@ -38,12 +45,17 @@ class AuthController extends Controller
     }
 
     /**
-     * トークン破棄（ログアウト）
+     * 現在のAPI認証トークンを破棄してログアウトする
+     *
+     * @param  Request  $request  認証済みユーザーのリクエスト
+     * @return JsonResponse ログアウト結果を含むJSONレスポンス
      */
-    public function logout(Request $request)
+    public function logout(Request $request): JsonResponse
     {
         // 現在のリクエストで使用されたトークンを削除
-        $request->user()->currentAccessToken()->delete();
+        /** @var PersonalAccessToken $token */
+        $token = $request->user()->currentAccessToken();
+        $token->delete();
 
         return response()->json([
             'message' => 'ログアウトしました。',

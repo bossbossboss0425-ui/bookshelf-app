@@ -18,19 +18,31 @@ class Review extends Model
         'comment',
     ];
 
-    // レビューを投稿したユーザー
+    /**
+     * レビューを投稿したユーザーを取得する
+     *
+     * @return BelongsTo ユーザーとのリレーション
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    // レビュー対象の書籍
+    /**
+     * レビュー対象の書籍を取得する
+     *
+     * @return BelongsTo 書籍とのリレーション
+     */
     public function book(): BelongsTo
     {
         return $this->belongsTo(Book::class);
     }
 
-    // このレビューに「いいね」したユーザー（多対多）
+    /**
+     * このレビューに「いいね」したユーザーを取得する
+     *
+     * @return BelongsToMany 「いいね」したユーザーとの多対多リレーション
+     */
     public function likedByUsers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'review_likes')->withTimestamps();
